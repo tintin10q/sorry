@@ -103,9 +103,7 @@
         }
 
         .form-section {
-            padding: 30px;
-            padding-top:10px;
-            padding-bottom: 0;
+            padding: 10px 30px 0;
             background: white;
         }
 
@@ -508,7 +506,7 @@
      * @property {string} person
      * @property {string} reason
      * @property {string} context
-     * @property {date} Date
+     * @property {Date} date
      * @property {number} timestamp
      */
 
@@ -567,7 +565,7 @@
 
             receivedDetails.addEventListener('toggle', saveDetailToggle)
             givenDetails.addEventListener('toggle', saveDetailToggle);
-            searchQuery.addEventListener('input', (e) => {
+            searchQuery.addEventListener('input', () => {
                 this.renderApologies()
                 this.updateStats();
             });
@@ -597,6 +595,7 @@
             const reason = form.reason.value;
             const context = form.context.value;
 
+            /** @type {Apology} */
             const apology = {
                 id: Date.now(),
                 person,
