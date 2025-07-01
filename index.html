@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apology Tracker</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32'%3E%3Cdefs%3E%3ClinearGradient id='heartGradient' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ff6b6b;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23ee5a24;stop-opacity:1' /%3E%3C/linearGradient%3E%3ClinearGradient id='bgGradient' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23764ba2;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='15' fill='url(%23bgGradient)' stroke='%23ffffff' stroke-width='1'/%3E%3Cg transform='translate(16,16)'%3E%3Cpath d='M-2,-4 C-6,-8 -12,-6 -12,-2 C-12,2 -2,8 -2,8 L-2,-4 Z' fill='url(%23heartGradient)'/%3E%3Cpath d='M2,-4 C6,-8 12,-6 12,-2 C12,2 2,8 2,8 L2,-4 Z' fill='url(%23heartGradient)'/%3E%3Cline x1='0' y1='-4' x2='0' y2='8' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round'/%3E%3Cline x1='-1' y1='-1' x2='1' y2='1' stroke='%23ffffff' stroke-width='1' stroke-linecap='round'/%3E%3Cline x1='1' y1='3' x2='-1' y2='5' stroke='%23ffffff' stroke-width='1' stroke-linecap='round'/%3E%3C/g%3E%3Ccircle cx='8' cy='10' r='0.8' fill='%23ffffff' opacity='0.8'/%3E%3Ccircle cx='24' cy='12' r='0.6' fill='%23ffffff' opacity='0.6'/%3E%3Ccircle cx='6' cy='22' r='0.5' fill='%23ffffff' opacity='0.7'/%3E%3Ccircle cx='26' cy='24' r='0.7' fill='%23ffffff' opacity='0.5'/%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .form-section {
+            padding: 30px;
+            padding-top:10px;
+            padding-bottom: 0;
+            background: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .apologies-list {
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .apology-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .apology-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .apology-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        }
+
+        .apology-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .apology-person {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .apology-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .apology-reason {
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .apology-context {
+            color: #777;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #ff3742;
+            transform: scale(1.05);
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .tab-btn.active {
+            background: white;
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                margin: 10px;
+            }
+        }
+
+        .import-export button {
+            background-color: #04AA6D; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 22px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+
+        .import-export {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        details:not([open]) summary .hide-when-closed {
+            display: none;
+        }
+
+        details[open] summary .show-when-closed {
+            display: none;
+        }
+
+        details[open] summary  .hide-when-closed {
+            padding-left: 5px;
+        }
+
+        details:not([open]) summary .show-when-closed {
+            padding-left: 5px;
+        }
+
+        summary {
+            list-style: none;          /* Remove default marker */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        summary::marker {
+            display: none;             /* Hide default > marker in supported browsers */
+        }
+
+        summary::before {
+            content: "👉 ";            /* Custom emoji */
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+
+        /* Optional: rotate emoji on open */
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        .summary-marker summary::marker {
+                display: none;             /* Hide default > marker in supported browsers */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>💔 Apology Tracker</h1>
+        <p>Keep track of apologies given and received</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="receivedTab">Received Apologies</button>
+        <button class="tab-btn" id="givenTab">Given Apologies</button>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number" id="totalApologies">0</div>
+            <div class="stat-label" id="totalLabel">Total Received</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="thisWeek">0</div>
+            <div class="stat-label">This Week</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="avgPerDay">0</div>
+            <div class="stat-label">Avg/Day</div>
+        </div>
+    </div>
+    <div style="display: flex; gap: 0.25rem; align-items: center; margin-inline: 2rem; padding-top: 4px">
+        <label for="searchQuery" style="display: inline-block; font-size: large">Search:</label>
+        <input type="text" id="searchQuery" placeholder="Enter name query">
+    </div>
+
+    <div class="tab-content active" id="receivedContent" >
+        <div class="form-section" >
+            <details open id="receivedDetails" >
+                <summary >
+                    <span class="hide-when-closed" > Collapse</span>
+                    <span class="show-when-closed" > Open apology maker</span>
+                </summary>
+                <h2>Add Received Apology</h2>
+            <form id="receivedForm">
+                <div class="form-group">
+                    <label for="receivedPerson">Who apologized to you?</label>
+                    <input type="text" id="receivedPerson" name="person" required placeholder="Enter name...">
+                </div>
+
+                <div class="form-group">
+                    <label for="receivedReason">What did they apologize for?</label>
+                    <select id="receivedReason" name="reason" required>
+                        <option value="">Select a reason...</option>
+                        <option value="Being Late">Being Late</option>
+                        <option value="Interrupting">Interrupting</option>
+                        <option value="Forgetting Something">Forgetting Something</option>
+                        <option value="Mistake at Work">Mistake at Work</option>
+                        <option value="Canceling Plans">Canceling Plans</option>
+                        <option value="Misunderstanding">Misunderstanding</option>
+                        <option value="Rude Behavior">Rude Behavior</option>
+                        <option value="Breaking Something">Breaking Something</option>
+                        <option value="Not Responding">Not Responding</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="receivedContext">Additional Context (Optional)</label>
+                    <textarea id="receivedContext" name="context" placeholder="Any additional details..."></textarea>
+                </div>
+
+                <button type="submit" class="btn">Add Received Apology</button>
+            </form>
+            </details>
+        </div>
+
+        <div class="apologies-list">
+            <h2>Received Apologies</h2>
+            <div id="receivedList">
+                <div class="empty-state">
+                    <h3>No apologies received yet!</h3>
+                    <p>When someone apologizes to you, add it above to start tracking.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="givenContent">
+        <div class="form-section">
+            <details open id="givenDetails">
+                <summary class="summary-marker" >
+                    <span class="hide-when-closed">Collapse</span>
+                    <span class="show-when-closed">Open apology creator</span>
+                </summary>
+                <h2>Add Given Apology</h2>
+            <form id="givenForm">
+                <div class="form-group">
+                    <label for="givenPerson">Who did you apologize to?</label>
+                    <input type="text" id="givenPerson" name="person" required placeholder="Enter name...">
+                </div>
+
+                <div class="form-group">
+                    <label for="givenReason">What did you apologize for?</label>
+                    <select id="givenReason" name="reason" required>
+                        <option value="">Select a reason...</option>
+                        <option value="Being Late">Being Late</option>
+                        <option value="Interrupting">Interrupting</option>
+                        <option value="Forgetting Something">Forgetting Something</option>
+                        <option value="Mistake at Work">Mistake at Work</option>
+                        <option value="Canceling Plans">Canceling Plans</option>
+                        <option value="Misunderstanding">Misunderstanding</option>
+                        <option value="Rude Behavior">Rude Behavior</option>
+                        <option value="Breaking Something">Breaking Something</option>
+                        <option value="Not Responding">Not Responding</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="givenContext">Additional Context (Optional)</label>
+                    <textarea id="givenContext" name="context" placeholder="Any additional details..."></textarea>
+                </div>
+
+                <button type="submit" class="btn">Add Given Apology</button>
+            </form>
+            </details>
+        </div>
+
+        <div class="apologies-list">
+            <h2>Given Apologies</h2>
+            <div id="givenList">
+                <div class="empty-state">
+                    <h3>No apologies given yet!</h3>
+                    <p>When you apologize to someone, add it above to start tracking.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="import-export">
+        <button onclick="tracker.exportData()" >Export Data</button>
+        <button onclick="importInput.click()" >Import Data</button>
+        <input type="file" id="importInput" accept=".json" class="hidden">
+    </div>
+</div>
+
+<script>
+    /**
+     * @typedef Apology
+     * @type {object}
+     * @property {number} id
+     * @property {string} person
+     * @property {string} reason
+     * @property {string} context
+     * @property {date} Date
+     * @property {number} timestamp
+     */
+
+    class ApologyTracker {
+        constructor() {
+
+            /** @type {Apology[]}*/
+            this.receivedApologies = [];
+            /** @type {Apology[]}*/
+            this.givenApologies = [];
+            /** @type {'received' | 'given'} */
+            this.currentTab = 'received';
+            this.init();
+        }
+
+        init() {
+            this.loadData();
+            this.bindEvents();
+            this.updateStats();
+            this.renderApologies();
+        }
+
+        bindEvents() {
+            receivedForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.addApology('received');
+            });
+
+            givenForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.addApology('given');
+            });
+
+            receivedTab.addEventListener('click', () => this.switchTab('received'));
+            givenTab.addEventListener('click', () => this.switchTab('given'));
+
+            importInput.addEventListener('change', (e) => this.importData(e));
+
+            function saveDetailToggle(e) {
+                if (typeof localStorage !== 'undefined') {
+                    if (e.newState === "closed")  {
+                        localStorage.setItem('detailsClosed', "true");
+                    }
+                    else localStorage.removeItem('detailsClosed');
+                }
+
+                if (e.newState === "closed")  {
+                    receivedDetails.open = false;
+                    givenDetails.open = false;
+                } else if (e.newState === "open")  {
+                    receivedDetails.open = true;
+                    givenDetails.open = true;
+                }
+
+            }
+
+            receivedDetails.addEventListener('toggle', saveDetailToggle)
+            givenDetails.addEventListener('toggle', saveDetailToggle);
+            searchQuery.addEventListener('input', (e) => {
+                this.renderApologies()
+                this.updateStats();
+            });
+        }
+
+        switchTab(tab) {
+            this.currentTab = tab;
+
+            // Update tab buttons
+            receivedTab.classList.toggle('active', tab === 'received');
+            givenTab.classList.toggle('active', tab === 'given');
+
+            // Update tab content
+            receivedContent.classList.toggle('active', tab === 'received');
+            givenContent.classList.toggle('active', tab === 'given');
+
+            // Update stats label
+            totalLabel.textContent = tab === 'received' ? 'Total Received' : 'Total Given';
+
+            this.updateStats();
+        }
+
+        addApology(type) {
+            const isReceived = type === 'received';
+            const form = isReceived ? receivedForm : givenForm;
+            const person = form.person.value;
+            const reason = form.reason.value;
+            const context = form.context.value;
+
+            const apology = {
+                id: Date.now(),
+                person,
+                reason,
+                context,
+                date: new Date(),
+                timestamp: Date.now()
+            };
+
+            if (isReceived) {
+                this.receivedApologies.unshift(apology);
+            } else {
+                this.givenApologies.unshift(apology);
+            }
+
+            this.saveData();
+            this.updateStats();
+            this.renderApologies();
+            form.reset();
+        }
+
+        deleteApology(id, type) {
+            if (type === 'received') {
+                this.receivedApologies = this.receivedApologies.filter(apology => apology.id !== id);
+            } else {
+                this.givenApologies = this.givenApologies.filter(apology => apology.id !== id);
+            }
+            this.saveData();
+            this.updateStats();
+            this.renderApologies();
+        }
+
+        updateStats() {
+            const apologies = this.filterApologies(this.currentTab === 'received' ? this.receivedApologies : this.givenApologies);
+            const total = apologies.length;
+            const now = new Date();
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            const thisWeekCount = apologies.filter(apology =>
+                new Date(apology.date) >= weekAgo
+            ).length;
+
+            const daysSinceFirst = apologies.length > 0
+                ? Math.max(1, Math.ceil((now - new Date(apologies[apologies.length - 1].date)) / (1000 * 60 * 60 * 24)))
+                : 1;
+
+            totalApologies.textContent = total;
+            thisWeek.textContent = thisWeekCount;
+            avgPerDay.textContent = total > 0 ? (total / daysSinceFirst).toFixed(1) : 0;
+        }
+
+        /**
+         * @param {Apology[]} apologies
+         * @return {Apology[]}
+         **/
+        filterApologies(apologies) {
+            if (searchQuery.value && typeof searchQuery.value === 'string') {
+                const normalized_query = searchQuery.value.normalize().toLowerCase();
+                return apologies.filter(apology => {
+                    const normalized_name = apology.person.normalize().toLowerCase();
+                    return normalized_name.includes(normalized_query);
+                })
+            } else return apologies;
+        }
+
+        renderApologies() {
+            const isReceived = this.currentTab === 'received';
+            const unfilteredApologies = isReceived ? this.receivedApologies : this.givenApologies;
+            const apologies = this.filterApologies(unfilteredApologies);
+            const container = isReceived ? receivedList : givenList;
+
+
+            if (unfilteredApologies.length === 0) {
+                const emptyMessage = isReceived
+                    ? 'No apologies received yet!<br>When someone apologizes to you, add it above to start tracking.'
+                    : 'No apologies given yet!<br>When you apologize to someone, add it above to start tracking.';
+
+                container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>${emptyMessage.split('<br>')[0]}</h3>
+                            <p>${emptyMessage.split('<br>')[1]}</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            if (unfilteredApologies.length !== 0 && apologies.length === 0) {
+                const emptyMessage = 'No apologies matched your filter!<br>Try change your search query';
+
+                container.innerHTML = `
+                        <div class="empty-state">
+                            <h3>${emptyMessage.split('<br>')[0]}</h3>
+                            <p>${emptyMessage.split('<br>')[1]}</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            const actionText = isReceived ? 'Apologized for' : 'You apologized for';
+            container.innerHTML = apologies.map(apology => `
+                    <div class="apology-item">
+                        <div class="apology-header">
+                            <span class="apology-person">${apology.person}</span>
+                            <div>
+                                <span class="apology-date">${this.formatDate(apology.date)}</span>
+                                <button class="delete-btn" onclick="tracker.deleteApology(${apology.id}, '${this.currentTab}')">×</button>
+                            </div>
+                        </div>
+                        <div class="apology-reason">${actionText}: ${apology.reason}</div>
+                        ${apology.context ? `<div class="apology-context">"${apology.context}"</div>` : ''}
+                    </div>
+                `).join('');
+        }
+
+        formatDate(date) {
+            const d = new Date(date);
+            const now = new Date();
+            const diffTime = Math.abs(now - d);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return 'Today';
+            } else if (diffDays === 1) {
+                return 'Yesterday';
+            } else if (diffDays < 7) {
+                return `${diffDays} days ago`;
+            } else {
+                return d.toLocaleDateString();
+            }
+        }
+
+        saveData() {
+            if (typeof localStorage !== 'undefined') {
+                const data = {
+                    receivedApologies: this.receivedApologies,
+                    givenApologies: this.givenApologies
+                };
+                localStorage.setItem('apologyTracker', JSON.stringify(data));
+            }
+        }
+
+        loadData() {
+            if (typeof localStorage !== 'undefined') {
+                const saved = localStorage.getItem('apologyTracker');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        this.receivedApologies = data.receivedApologies || [];
+                        this.givenApologies = data.givenApologies || [];
+
+                        // Convert date strings back to Date objects
+                        this.receivedApologies.forEach(apology => {
+                            apology.date = new Date(apology.date);
+                        });
+                        this.givenApologies.forEach(apology => {
+                            apology.date = new Date(apology.date);
+                        });
+                    } catch (error) {
+                        console.error('Failed to load saved data:', error);
+                    }
+                }
+                if (localStorage.getItem('detailsClosed')) {
+                    receivedDetails.open = false;
+                    givenDetails.open = false;
+                }
+            }
+        }
+
+        exportData() {
+            const data = {
+                receivedApologies: this.receivedApologies,
+                givenApologies: this.givenApologies,
+                exportDate: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `apology-tracker-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    if (data.receivedApologies || data.givenApologies) {
+                        const confirmed = confirm('This will replace all current data. Are you sure?');
+                        if (confirmed) {
+                            this.receivedApologies = (data.receivedApologies || []).map(apology => ({
+                                ...apology,
+                                date: new Date(apology.date)
+                            }));
+                            this.givenApologies = (data.givenApologies || []).map(apology => ({
+                                ...apology,
+                                date: new Date(apology.date)
+                            }));
+
+                            this.saveData();
+                            this.updateStats();
+                            this.renderApologies();
+                            alert('Data imported successfully!');
+                        }
+                    } else {
+                        alert('Invalid file format. Please select a valid apology tracker export file.');
+                    }
+                } catch (error) {
+                    alert('Failed to import data. Please check the file format.');
+                    console.error('Import error:', error);
+                }
+            };
+            reader.readAsText(file);
+
+            // Clear the input so the same file can be selected again
+            event.target.value = '';
+        }
+    }
+
+    const tracker = new ApologyTracker();
+</script>
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+    }
+</script>
+</body>
+</html>

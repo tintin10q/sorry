@@ -1,0 +1,13 @@
+{
+  "name": "Apology tracker",
+  "short_name": "Sorry tracker",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone"
+}
